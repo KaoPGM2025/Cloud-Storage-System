@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Storage System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Standard Login/Register Modal -->
+    <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl p-8 w-96 fade-in">
+            <!-- Logo -->
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full shadow-lg mb-4">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                    </svg>
+                </div>
+                <h2 id="authTitle" class="text-2xl font-bold text-gray-800 mb-2">เข้าสู่ระบบ</h2>
+                <p class="text-gray-600">กรุณากรอกข้อมูลเพื่อเข้าใช้งาน</p>
+            </div>
+            
+            <form id="authForm" class="space-y-4">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">อีเมล</label>
+                    <input type="email" id="username" placeholder="กรอกอีเมลของคุณ" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                </div>
+                
+                <div id="passwordField">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">รหัสผ่าน</label>
+                    <input type="password" id="password" placeholder="กรอกรหัสผ่านของคุณ" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                </div>
+                
+                <div id="confirmPasswordField" class="hidden">
+                    <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">ยืนยันรหัสผ่าน</label>
+                    <input type="password" id="confirmPassword" placeholder="กรอกรหัสผ่านอีกครั้ง" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                
+
+                
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input id="rememberMe" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="rememberMe" class="ml-2 block text-sm text-gray-700">จดจำการเข้าสู่ระบบ</label>
+                    </div>
+                    <button type="button" id="forgotPassword" class="text-sm text-blue-600 hover:text-blue-800">ลืมรหัสผ่าน?</button>
+                </div>
+                
+                <button type="submit" id="authSubmit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200 font-medium">
+                    เข้าสู่ระบบ
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center">
+                <p class="text-gray-600">
+                    <span id="authToggleText">ยังไม่มีบัญชี?</span>
+                    <button id="toggleAuth" class="text-blue-600 hover:text-blue-800 font-medium ml-1">สมัครสมาชิก</button>
+                </p>
+            </div>
+            
+            <div class="mt-6 text-xs text-gray-500 text-center">
+                <p>การใช้งานแสดงว่าคุณยอมรับ <a href="#" class="text-blue-600 hover:underline">ข้อกำหนดการใช้งาน</a> และ <a href="#" class="text-blue-600 hover:underline">นโยบายความเป็นส่วนตัว</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="hidden">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-3">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="#1976d2">
+                                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                            </svg>
+                            <h1 class="text-2xl font-bold text-gray-900">Cloud Storage</h1>
+                        </div>
+                        <nav class="flex space-x-4">
+                            <button id="homeTab" class="px-4 py-2 text-blue-600 border-b-2 border-blue-600 font-medium">หน้าหลัก</button>
+                            <button id="filesTab" class="px-4 py-2 text-gray-600 hover:text-blue-600 font-medium">ไฟล์ของฉัน</button>
+                        </nav>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-3">
+                            <div id="userAvatar" class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
+                                U
+                            </div>
+                            <span id="currentUser" class="text-gray-700"></span>
+                        </div>
+                        <button id="logoutBtn" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-200">ออกจากระบบ</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Storage Usage Bar -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center space-x-2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="#666">
+                            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                        </svg>
+                        <span class="text-sm font-medium text-gray-700">พื้นที่จัดเก็บ</span>
+                    </div>
+                    <span id="storageText" class="text-sm text-gray-600">0 KB / 15 GB</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="storageBar" class="bg-blue-600 h-2 rounded-full progress-bar" style="width: 0%"></div>
+                </div>
+                <div id="storageWarning" class="hidden mt-2 p-3 bg-red-100 border border-red-400 text-red-700 rounded flex items-center space-x-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#dc2626">
+                        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                    </svg>
+                    <span>พื้นที่จัดเก็บเต็ม! กรุณาลบไฟล์ภายใน 2 วัน ระบบจะทำการรีเซ็ตไฟล์โดยอัตโนมัติ ไฟล์ต่างๆจะไม่สามารถกู้คืนได้</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Home Tab Content -->
+        <div id="homeContent" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">อัพโหลดไฟล์</h2>
+                
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition duration-200">
+                    <input type="file" id="fileInput" multiple class="hidden" accept="image/*,.pdf,.doc,.docx,.txt,.zip,.rar">
+                    <div id="dropZone" class="cursor-pointer">
+                        <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                            <path d="M12,11L16,15H13.5V19H10.5V15H8L12,11Z"/>
+                        </svg>
+                        <p class="text-lg text-gray-600 mb-2">คลิกเพื่อเลือกไฟล์หรือลากไฟล์มาวางที่นี่</p>
+                        <p class="text-sm text-gray-500">รองรับ: รูปภาพ, PDF, เอกสาร, ZIP (ไม่เกิน 15GB รวม)</p>
+                    </div>
+                </div>
+
+                <div id="uploadProgress" class="hidden mt-6">
+                    <div class="bg-gray-200 rounded-full h-2">
+                        <div id="progressBar" class="bg-green-600 h-2 rounded-full progress-bar" style="width: 0%"></div>
+                    </div>
+                    <p id="progressText" class="text-sm text-gray-600 mt-2">กำลังอัพโหลด...</p>
+                </div>
+
+                <div id="uploadSuccess" class="hidden mt-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+                    ✅ อัพโหลดสำเร็จ! ไฟล์ถูกบันทึกในไฟล์ของฉันแล้ว
+                </div>
+            </div>
+        </div>
+
+        <!-- Files Tab Content -->
+        <div id="filesContent" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="bg-white rounded-lg shadow-lg">
+                <div class="p-6 border-b">
+                    <h2 class="text-2xl font-bold text-gray-800">ไฟล์ของฉัน</h2>
+                </div>
+                <div id="filesList" class="p-6">
+                    <div class="text-center text-gray-500 py-8">
+                        ยังไม่มีไฟล์ กรุณาอัพโหลดไฟล์ในหน้าหลัก
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Storage management
+        const STORAGE_LIMIT = 15 * 1024 * 1024 * 1024; // 15GB in bytes
+        let currentUser = null;
+        let isLoginMode = true;
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            checkExistingSession();
+            setupEventListeners();
+        });
+
+        function checkExistingSession() {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = savedUser;
+                showMainApp();
+            }
+        }
+
+        function setupEventListeners() {
+            // Auth form
+            document.getElementById('authForm').addEventListener('submit', handleAuth);
+            document.getElementById('toggleAuth').addEventListener('click', toggleAuthMode);
+            document.getElementById('forgotPassword').addEventListener('click', handleForgotPassword);
+            
+            // Navigation
+            document.getElementById('homeTab').addEventListener('click', () => showTab('home'));
+            document.getElementById('filesTab').addEventListener('click', () => showTab('files'));
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            
+            // File upload
+            document.getElementById('dropZone').addEventListener('click', () => document.getElementById('fileInput').click());
+            document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+            
+            // Drag and drop
+            const dropZone = document.getElementById('dropZone');
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-blue-400');
+            });
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('border-blue-400');
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-blue-400');
+                const files = e.dataTransfer.files;
+                processFiles(files);
+            });
+        }
+
+        function handleAuth(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (isLoginMode) {
+                // Login validation
+                if (!username || !password) {
+                    alert('กรุณากรอกอีเมลและรหัสผ่าน');
+                    return;
+                }
+
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                if (users[username] && users[username].password === password) {
+                    currentUser = username;
+                    localStorage.setItem('currentUser', username);
+                    showMainApp();
+                    console.log('เข้าสู่ระบบสำเร็จ:', username);
+                } else {
+                    alert('อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาลองอีกครั้ง');
+                }
+            } else {
+                // Register validation
+                if (!username || !password || !confirmPassword) {
+                    alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    alert('รหัสผ่านไม่ตรงกัน กรุณาลองอีกครั้ง');
+                    return;
+                }
+
+                if (password.length < 6) {
+                    alert('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+                    return;
+                }
+
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                if (users[username]) {
+                    alert('อีเมลนี้มีอยู่แล้ว กรุณาใช้อีเมลอื่น หรือเข้าสู่ระบบแทน');
+                } else {
+                    // Create new user with complete data structure
+                    users[username] = { 
+                        password: password, 
+                        files: [], 
+                        totalSize: 0, 
+                        loginMethod: 'email',
+                        registeredDate: new Date().toLocaleString('th-TH'),
+                        email: username
+                    };
+                    
+                    // Save to localStorage with error handling
+                    try {
+                        localStorage.setItem('users', JSON.stringify(users));
+                        currentUser = username;
+                        localStorage.setItem('currentUser', username);
+                        
+                        console.log('สมัครสมาชิกสำเร็จ:', username);
+                        console.log('ข้อมูลผู้ใช้ที่บันทึก:', users[username]);
+                        
+                        alert('สมัครสมาชิกสำเร็จ! ยินดีต้อนรับ\nคุณสามารถใช้อีเมลและรหัสผ่านนี้เข้าสู่ระบบได้');
+                        showMainApp();
+                    } catch (error) {
+                        alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองอีกครั้ง');
+                        console.error('Error saving user data:', error);
+                    }
+                }
+            }
+        }
+
+
+
+        function handleForgotPassword() {
+            alert('ในการใช้งานจริง ระบบจะส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณ');
+        }
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            const title = document.getElementById('authTitle');
+            const submit = document.getElementById('authSubmit');
+            const toggle = document.getElementById('toggleAuth');
+            const toggleText = document.getElementById('authToggleText');
+            const confirmPasswordField = document.getElementById('confirmPasswordField');
+            const rememberMe = document.getElementById('rememberMe').parentElement;
+            const forgotPassword = document.getElementById('forgotPassword');
+            
+            // Reset form
+            document.getElementById('authForm').reset();
+            
+            if (isLoginMode) {
+                title.textContent = 'เข้าสู่ระบบ';
+                submit.textContent = 'เข้าสู่ระบบ';
+                toggle.textContent = 'สมัครสมาชิก';
+                toggleText.textContent = 'ยังไม่มีบัญชี?';
+                
+                // Hide registration fields
+                confirmPasswordField.classList.add('hidden');
+                
+                // Show login elements
+                rememberMe.classList.remove('hidden');
+                forgotPassword.classList.remove('hidden');
+            } else {
+                title.textContent = 'สมัครสมาชิก';
+                submit.textContent = 'สมัครสมาชิก';
+                toggle.textContent = 'เข้าสู่ระบบ';
+                toggleText.textContent = 'มีบัญชีแล้ว?';
+                
+                // Show registration fields
+                confirmPasswordField.classList.remove('hidden');
+                
+                // Hide login elements
+                rememberMe.classList.add('hidden');
+                forgotPassword.classList.add('hidden');
+            }
+        }
+
+        function showMainApp() {
+            document.getElementById('authModal').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            
+            // Update user display
+            document.getElementById('currentUser').textContent = currentUser;
+            
+            const userAvatar = document.getElementById('userAvatar');
+            // Use first letter of email
+            userAvatar.textContent = currentUser.charAt(0).toUpperCase();
+            
+            updateStorageDisplay();
+            showTab('home');
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            document.getElementById('authModal').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('authForm').reset();
+        }
+
+        function showTab(tab) {
+            // Update tab buttons
+            document.getElementById('homeTab').className = tab === 'home' 
+                ? 'px-4 py-2 text-blue-600 border-b-2 border-blue-600 font-medium'
+                : 'px-4 py-2 text-gray-600 hover:text-blue-600 font-medium';
+            document.getElementById('filesTab').className = tab === 'files'
+                ? 'px-4 py-2 text-blue-600 border-b-2 border-blue-600 font-medium'
+                : 'px-4 py-2 text-gray-600 hover:text-blue-600 font-medium';
+            
+            // Show/hide content
+            document.getElementById('homeContent').classList.toggle('hidden', tab !== 'home');
+            document.getElementById('filesContent').classList.toggle('hidden', tab !== 'files');
+            
+            if (tab === 'files') {
+                displayFiles();
+            }
+        }
+
+        function handleFileUpload(e) {
+            const files = e.target.files;
+            processFiles(files);
+        }
+
+        function processFiles(files) {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            const userData = users[currentUser];
+            
+            let totalNewSize = 0;
+            for (let file of files) {
+                totalNewSize += file.size;
+            }
+            
+            if (userData.totalSize + totalNewSize > STORAGE_LIMIT) {
+                alert('ไฟล์ที่เลือกจะทำให้เกินขีดจำกัด 15GB กรุณาเลือกไฟล์ที่มีขนาดเล็กกว่า');
+                return;
+            }
+            
+            simulateUpload(files);
+        }
+
+        function simulateUpload(files) {
+            const progressContainer = document.getElementById('uploadProgress');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const successMessage = document.getElementById('uploadSuccess');
+            
+            progressContainer.classList.remove('hidden');
+            successMessage.classList.add('hidden');
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    // Save files to user data
+                    const users = JSON.parse(localStorage.getItem('users') || '{}');
+                    const userData = users[currentUser];
+                    const now = new Date();
+                    
+                    for (let file of files) {
+                        const fileData = {
+                            id: Date.now() + Math.random(),
+                            name: file.name,
+                            size: file.size,
+                            type: file.type,
+                            uploadDate: now.toLocaleString('th-TH'),
+                            data: null // In real app, this would be the actual file data
+                        };
+                        userData.files.push(fileData);
+                        userData.totalSize += file.size;
+                    }
+                    
+                    users[currentUser] = userData;
+                    localStorage.setItem('users', JSON.stringify(users));
+                    
+                    setTimeout(() => {
+                        progressContainer.classList.add('hidden');
+                        successMessage.classList.remove('hidden');
+                        updateStorageDisplay();
+                        document.getElementById('fileInput').value = '';
+                        
+                        setTimeout(() => {
+                            successMessage.classList.add('hidden');
+                        }, 3000);
+                    }, 500);
+                }
+                
+                progressBar.style.width = progress + '%';
+                progressText.textContent = `กำลังอัพโหลด... ${Math.round(progress)}%`;
+            }, 100);
+        }
+
+        function updateStorageDisplay() {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            const userData = users[currentUser];
+            
+            // Ensure userData exists and has required properties
+            if (!userData) {
+                console.error('ไม่พบข้อมูลผู้ใช้:', currentUser);
+                return;
+            }
+            
+            // Initialize missing properties if needed
+            if (typeof userData.totalSize === 'undefined') {
+                userData.totalSize = 0;
+            }
+            if (!userData.files) {
+                userData.files = [];
+            }
+            
+            // Calculate used storage with proper formatting
+            let usedText;
+            if (userData.totalSize === 0) {
+                usedText = '0 KB';
+            } else if (userData.totalSize < 1024) {
+                usedText = '0 KB'; // Show 0 KB for very small files
+            } else if (userData.totalSize < 1024 * 1024) {
+                const usedKB = Math.ceil(userData.totalSize / 1024);
+                usedText = `${usedKB} KB`;
+            } else if (userData.totalSize < 1024 * 1024 * 1024) {
+                const usedMB = (userData.totalSize / (1024 * 1024)).toFixed(1);
+                usedText = `${usedMB} MB`;
+            } else {
+                const usedGB = (userData.totalSize / (1024 * 1024 * 1024)).toFixed(2);
+                usedText = `${usedGB} GB`;
+            }
+            
+            const percentage = (userData.totalSize / STORAGE_LIMIT) * 100;
+            
+            document.getElementById('storageText').textContent = `${usedText} / 15 GB`;
+            document.getElementById('storageBar').style.width = percentage + '%';
+            
+            const warning = document.getElementById('storageWarning');
+            if (percentage >= 100) {
+                warning.classList.remove('hidden');
+                document.getElementById('storageBar').className = 'bg-red-600 h-2 rounded-full progress-bar';
+            } else if (percentage >= 90) {
+                warning.classList.add('hidden');
+                document.getElementById('storageBar').className = 'bg-yellow-600 h-2 rounded-full progress-bar';
+            } else {
+                warning.classList.add('hidden');
+                document.getElementById('storageBar').className = 'bg-blue-600 h-2 rounded-full progress-bar';
+            }
+        }
+
+        function displayFiles() {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            const userData = users[currentUser];
+            const filesList = document.getElementById('filesList');
+            
+            // Ensure userData exists and has files array
+            if (!userData) {
+                filesList.innerHTML = '<div class="text-center text-gray-500 py-8">ไม่พบข้อมูลผู้ใช้</div>';
+                return;
+            }
+            
+            if (!userData.files) {
+                userData.files = [];
+                // Save the updated userData back to localStorage
+                users[currentUser] = userData;
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+            
+            if (userData.files.length === 0) {
+                filesList.innerHTML = '<div class="text-center text-gray-500 py-8">ยังไม่มีไฟล์ กรุณาอัพโหลดไฟล์ในหน้าหลัก</div>';
+                return;
+            }
+            
+            const filesHTML = userData.files.map(file => `
+                <div class="flex items-center justify-between p-4 border-b hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-shrink-0">
+                            ${getFileIcon(file.type)}
+                        </div>
+                        <div>
+                            <h3 class="font-medium text-gray-900">${file.name}</h3>
+                            <p class="text-sm text-gray-500">
+                                ${formatFileSize(file.size)} • อัพโหลดเมื่อ ${file.uploadDate}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="downloadFile('${file.id}')" class="flex items-center space-x-1 bg-blue-500 text-white px-3 py-2 rounded-md text-sm hover:bg-blue-600 transition-colors">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                            </svg>
+                            <span>ดาวน์โหลด</span>
+                        </button>
+                        <button onclick="deleteFile('${file.id}')" class="flex items-center space-x-1 bg-red-500 text-white px-3 py-2 rounded-md text-sm hover:bg-red-600 transition-colors">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                            </svg>
+                            <span>ลบ</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            filesList.innerHTML = filesHTML;
+        }
+
+        function getFileIcon(type) {
+            if (type.startsWith('image/')) {
+                return '<svg width="32" height="32" viewBox="0 0 24 24" fill="#4285f4"><path d="M21,19V5c0-1.1-0.9-2-2-2H5c-1.1,0-2,0.9-2,2v14c0,1.1,0.9,2,2,2h14C20.1,21,21,20.1,21,19z M8.5,13.5l2.5,3.01 L14.5,12l4.5,6H5L8.5,13.5z"/></svg>';
+            }
+            if (type.includes('pdf')) {
+                return '<svg width="32" height="32" viewBox="0 0 24 24" fill="#ea4335"><path d="M20,2H8A2,2 0 0,0 6,4V16A2,2 0 0,0 8,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M20,16H8V4H20V16Z"/><path d="M4,6H2V20A2,2 0 0,0 4,22H18V20H4V6Z"/></svg>';
+            }
+            if (type.includes('document') || type.includes('word')) {
+                return '<svg width="32" height="32" viewBox="0 0 24 24" fill="#4285f4"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>';
+            }
+            if (type.includes('zip') || type.includes('rar')) {
+                return '<svg width="32" height="32" viewBox="0 0 24 24" fill="#fbbc04"><path d="M14,17H12V15H10V13H12V15H14M14,9H12V7H14M12,11H10V9H12M14,13H12V11H14M12,7H10V5H12V7M14,5V7H16V5M20,6H16V4A2,2 0 0,0 14,2H10A2,2 0 0,0 8,4V6H4A2,2 0 0,0 2,8V19A3,3 0 0,0 5,22H19A3,3 0 0,0 22,19V8A2,2 0 0,0 20,6Z"/></svg>';
+            }
+            return '<svg width="32" height="32" viewBox="0 0 24 24" fill="#5f6368"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function downloadFile(fileId) {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            const userData = users[currentUser];
+            const file = userData.files.find(f => f.id == fileId);
+            
+            if (file) {
+                // Create a simple text file for demo purposes
+                const blob = new Blob([`ไฟล์ตัวอย่าง: ${file.name}\nอัพโหลดเมื่อ: ${file.uploadDate}`], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = file.name;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        function deleteFile(fileId) {
+            if (confirm('คุณแน่ใจหรือไม่ที่จะลบไฟล์นี้?')) {
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                const userData = users[currentUser];
+                const fileIndex = userData.files.findIndex(f => f.id == fileId);
+                
+                if (fileIndex !== -1) {
+                    const file = userData.files[fileIndex];
+                    userData.totalSize -= file.size;
+                    userData.files.splice(fileIndex, 1);
+                    
+                    users[currentUser] = userData;
+                    localStorage.setItem('users', JSON.stringify(users));
+                    
+                    displayFiles();
+                    updateStorageDisplay();
+                }
+            }
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'977629b927d4731c',t:'MTc1NjU3NjU2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
