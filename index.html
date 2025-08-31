@@ -51,10 +51,7 @@
                 
 
                 
-                <div class="flex items-center">
-                    <input id="rememberMe" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <label for="rememberMe" class="ml-2 block text-sm text-gray-700">จดจำการเข้าสู่ระบบ</label>
-                </div>
+
                 
                 <button type="submit" id="authSubmit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200 font-medium">
                     เข้าสู่ระบบ
@@ -306,7 +303,6 @@
             const toggle = document.getElementById('toggleAuth');
             const toggleText = document.getElementById('authToggleText');
             const confirmPasswordField = document.getElementById('confirmPasswordField');
-            const rememberMe = document.getElementById('rememberMe').parentElement;
             
             // Reset form
             document.getElementById('authForm').reset();
@@ -319,9 +315,6 @@
                 
                 // Hide registration fields
                 confirmPasswordField.classList.add('hidden');
-                
-                // Show login elements
-                rememberMe.classList.remove('hidden');
             } else {
                 title.textContent = 'สมัครสมาชิก';
                 submit.textContent = 'สมัครสมาชิก';
@@ -330,9 +323,6 @@
                 
                 // Show registration fields
                 confirmPasswordField.classList.remove('hidden');
-                
-                // Hide login elements
-                rememberMe.classList.add('hidden');
             }
         }
 
@@ -625,5 +615,5 @@
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'977bc6378460731c',t:'MTc1NjYzNTQwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'977bef834599731c',t:'MTc1NjYzNzA5Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
